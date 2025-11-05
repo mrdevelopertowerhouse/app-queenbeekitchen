@@ -1,0 +1,154 @@
+Project Requirement: 05-11-2025
+
+    Create Cousine
+
+        i. Requirement:
+
+            Recipe has a Cousine attribute to categorize recipes based on their culinary origin (e.g., Italian, Mexican, Chinese). So that users can filter and explore recipes by their preferred Cousine type.
+
+        ii. Decision: 
+
+            1. Store cousine information as a dedicated master records with below user inputs.
+
+                User inputs: name, description (optional) - as per standard fields, but optional because existing data may not have description.
+
+            2. Implement CRUD operations for Cousine master records.
+
+                - Create: Add a new Cousine record to the database.
+                - Read: Retrieve existing Cousine records from the database.
+                - Update: Modify an existing Cousine record in the database.
+                - Delete: Remove a Cousine record from the database.
+
+        iii. Master Table creation
+
+            Table Name: m_cousine
+
+            Fields:
+
+                1. id (Primary Key, Auto-increment)
+
+                2. name (Varchar(100), Unique, Not Null)
+
+                3. description (Text, Optional)
+
+                4. created_at (Timestamp, Default: Current Timestamp), created_by (Foreign Key to Users table), updated_at (Timestamp, Default: Current Timestamp on Update), updated_by (Foreign Key to Users table), delFlag (Boolean, Default: False)
+
+        iv. Relationships
+
+            1. One-to-Many relationship with Recipe table (One Cousine can have many Recipes)
+
+        v. API Endpoints
+
+            1. POST /api/cousines - Create a new Cousine
+
+                HTTP Status: 201 Created
+
+                Request Body:
+
+                    {
+                        "name": "Italian",
+                        "description": "Traditional Italian Cuisine"
+                    }
+
+                Response:
+    
+                    {
+                        "id": 1,
+                        "name": "Italian",
+                        "description": "Traditional Italian Cuisine",
+                    }
+
+                Validations:
+
+                    - name: Required, Unique
+
+                    - description: Optional
+
+            2. GET /api/cousines - Retrieve all Cousines
+
+                HTTP Status: 200 OK
+
+                Response:
+    
+                    [
+                        {
+                            "id": 1,
+                            "name": "Italian",
+                            "description": "Traditional Italian Cuisine",
+                        },
+                        {
+                            "id": 2,
+                            "name": "Mexican",
+                            "description": "Spicy and Flavorful Mexican Dishes",
+                        }
+                    ]
+
+            3. GET /api/cousines/{id} - Retrieve a specific Cousine by ID
+
+                HTTP Status: 200 OK
+
+                Response:
+    
+                    {
+                        "id": 1,
+                        "name": "Italian",
+                        "description": "Traditional Italian Cuisine",
+                    }
+
+            4. PUT /api/cousines/{id} - Update a specific Cousine by ID
+
+                HTTP Status: 200 OK
+
+                Request Body:
+
+                    {
+                        "name": "Italian",
+                        "description": "Traditional Italian Cuisine"
+                    }
+
+                Response:
+    
+                    {
+                        "id": 1,
+                        "name": "Italian",
+                        "description": "Traditional Italian Cuisine",
+                    }
+
+                Validations:
+
+                    - name: Required, Unique
+
+                    - description: Optional
+
+            5. PATCH /api/cousines/{id} - Soft delete a specific Cousine by ID (set delFlag to True)
+
+                HTTP Status: 204 No Content
+
+                Request Body: 
+
+                    {
+                        "delFlag": true
+                    }
+
+                Validations:
+
+                    - delFlag: Required, Boolean
+
+    Create Category
+
+    Create Language
+    
+        Field: name, isoCode (eg: en, fr, es), description (optional)
+
+    Create Recipe
+
+        Table Name: recipe
+
+        Fields:
+
+            id, cousineId (FK), categoryId (FK), uuid, title (notes: regional_name), ingredientsId, imageUrl, videoUrl
+
+    
+        Table: Recipe details
+
+            Fields: id, recipeId (FK), languageId (FK), name, instructions, ingredients

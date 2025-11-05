@@ -1,0 +1,13 @@
+Project Requirement: 05-11-2025
+
+    Create Cousine
+
+    Create Category
+
+    Create Language
+
+    Create Recipe
+
+    Trending Today
+
+    Food suggestion
