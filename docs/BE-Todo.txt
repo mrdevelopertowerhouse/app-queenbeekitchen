@@ -21,6 +21,8 @@ Project Requirement: 05-11-2025
 
         iii. Master Table creation
 
+            ORM: Prisma ORM
+
             Table Name: m_cousine
 
             Fields:
