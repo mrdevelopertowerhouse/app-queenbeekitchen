@@ -21,6 +21,8 @@ Project Requirement: 05-11-2025
 
         iii. Master Table creation
 
+            Database: app-queenbeekitchen (MySQL)
+
             ORM: Prisma ORM
 
             Table Name: m_cousine
