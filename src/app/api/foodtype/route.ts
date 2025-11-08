@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import CuisineService from "@/services/CuisineService";
+import FoodTypeService from "@/services/FoodService";
 
 // ✅ Unified success response
 function jsonResponse({
@@ -28,8 +28,8 @@ function errorResponse({
 }
 
 /**
- * @route   POST /api/cuisines
- * @desc    Create a new cuisine
+ * @route   POST /api/foodtype
+ * @desc    Create a new foodtype
  * @access  Authenticated (replace static user later)
  */
 export async function POST(req: NextRequest) {
@@ -49,18 +49,18 @@ export async function POST(req: NextRequest) {
 
         const creatorId = 1; // TODO: replace with real user session later
 
-        const cuisine = await CuisineService.createCuisine(body, creatorId);
+        const foodtype = await FoodTypeService.createFoodType(body, creatorId);
 
         // ✅ Return only selected fields
         const responseData = {
-            id: cuisine.id,
-            name: cuisine.name,
-            description: cuisine.description,
+            id: foodtype.id,
+            name: foodtype.name,
+            description: foodtype.description,
         };
 
         return NextResponse.json(
             jsonResponse({
-                message: "Cuisine created successfully",
+                message: "Foodtype created successfully",
                 data: responseData,
             }),
             { status: 201 }
@@ -70,7 +70,35 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(
             errorResponse({
                 error,
-                message: "Failed to create cuisine",
+                message: "Failed to create foodtype",
+            }),
+            { status: 500 }
+        );
+    }
+}
+
+
+/**
+ * @route   GET /api/foodtype
+ * @desc    Get all foodtypes
+ * @access  Public
+ */
+export async function GET() {
+    try {
+        const foodtypes = await FoodTypeService.getAllFoodTypes();
+
+        return NextResponse.json(
+            jsonResponse({
+                message: "Foodtypes fetched successfully",
+                data: foodtypes,
+            }),
+            { status: 200 }
+        );
+    } catch (error: unknown) {
+        return NextResponse.json(
+            errorResponse({
+                error,
+                message: "Failed to fetch foodtypes",
             }),
             { status: 500 }
         );

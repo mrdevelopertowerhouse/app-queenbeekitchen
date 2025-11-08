@@ -82,6 +82,55 @@ class LanguageService {
             description: language.description,
         };
     }
+
+    static async updateLanguage(
+        id: number,
+        data: { name: string; isoCode: string; description?: string },
+        updaterId: number
+    ) {
+        // Check for uniqueness
+        const existing = await prisma.m_language.findFirst({
+            where: {
+                AND: [
+                    { id: { not: id } },
+                    { OR: [{ name: data.name }, { isoCode: data.isoCode }] },
+                ],
+                delFlag: false,
+            },
+        });
+
+        if (existing) {
+            throw new Error("Language name or ISO code already exists");
+        }
+
+        return prisma.m_language.update({
+            where: { id },
+            data: {
+                name: data.name,
+                isoCode: data.isoCode,
+                description: data.description || null,
+                updatedBy: updaterId,
+            },
+            select: {
+                id: true,
+                name: true,
+                isoCode: true,
+                description: true,
+            },
+        });
+    }
+
+    // ✅ Soft Delete
+    static async softDeleteLanguage(id: number, delFlag: boolean, updaterId: number) {
+        return prisma.m_language.update({
+            where: { id },
+            data: {
+                delFlag,
+                updatedBy: updaterId,
+            },
+        });
+    }
+
 }
 
 
