@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import CategoryService from "@/services/CategoryService"
+import CategoryService from "@/server/services/CategoryService"
 
 // ✅ Utility functions for success/error responses
 function jsonResponse({

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import LanguageService from "@/services/LanguageService";
+import LanguageService from "@/server/services/LanguageService";
 
 // ✅ Unified success response
 function jsonResponse({

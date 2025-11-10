@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import FoodTypeService from "@/services/FoodService";
+import FoodTypeService from "@/server/services/FoodService";
 
 // ✅ Unified success response
 function jsonResponse({

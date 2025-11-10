@@ -1,18 +1,47 @@
 import prisma from "@/prisma/client";
+import { CuisineCreateDTO } from "@/shared/dto/cuisine.dto";
+import { m_cuisine } from "@prisma/client";
 
 class CuisineService {
-    static async createCuisine(data: { name: string; description?: string }, creatorId: number) {
-        return prisma.m_cuisine.create({
-            data: {
-                name: data.name,
-                description: data.description || null,
-                createdBy: creatorId,
-                updatedBy: creatorId,
-            },
-        });
+    static getInstance() {
+        throw new Error("Method not implemented.");
     }
 
-    static async getAllCuisines() {
+    static async createCuisine(data: CuisineCreateDTO, creatorId: number): Promise<Partial<m_cuisine>> {
+        try {
+            const savedCuisine = await prisma.m_cuisine.create({
+                data: {
+                    name: data.name,
+                    description: data.description,
+                    createdBy: creatorId,
+                    updatedBy: creatorId
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    description: true
+                }
+            });
+            return savedCuisine;
+        } catch (error) {
+            console.error("❌ Error while creating cuisine:", error);
+            throw error; // Re-throw to handle in controller
+        }
+    }
+
+
+    // static async createCuisine(data: { name: string; description?: string }, creatorId: number) {
+    //     return prisma.m_cuisine.create({
+    //         data: {
+    //             name: data.name,
+    //             description: data.description || null,
+    //             createdBy: creatorId,
+    //             updatedBy: creatorId,
+    //         },
+    //     });
+    // }
+
+    static async getAllCuisines(): Promise<Partial<m_cuisine>[]> {
         const cuisines = await prisma.m_cuisine.findMany({
             where: {
                 delFlag: false,

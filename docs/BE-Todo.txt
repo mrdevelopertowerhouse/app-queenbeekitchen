@@ -35,9 +35,7 @@ Project Requirement: 05-11-2025
            
            1. One-to-Many relationship with Recipe table (One User can create many Recipes)
 
-
-         
-2.Create Cousine
+    2.Create Cousine
 
         i. Requirement:
 

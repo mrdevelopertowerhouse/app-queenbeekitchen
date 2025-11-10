@@ -18,19 +18,6 @@ datasource db {
 }
 
 
-model m_role {
-  id          Int       @id @default(autoincrement())
-  name        String    @unique         // e.g. "ADMIN", "USER", "SUPERADMIN"
-  description String?                   // short explanation of role purpose
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  createdBy   Int
-  updatedBy   Int
-  delFlag     Boolean   @default(false)
-
-  users       m_user[]                     // 1 Role → Many Users
-}
-
 
 model m_user {
   id         Int       @id @default(autoincrement())
@@ -41,9 +28,8 @@ model m_user {
   updatedAt  DateTime  @updatedAt
   createdBy Int
   updatedBy Int
-  // Relationship to Role
-  roleId     Int
-  role       m_role    @relation(fields: [roleId], references: [id])
+  /// user can multirole by separated by comma. Roles: SUPERADMIN, ADMIN, USER 
+  role       String    
 
    // 👇 Add reverse relation fields
   cuisinesCreated m_cuisine[] @relation("CuisineCreatedBy")
