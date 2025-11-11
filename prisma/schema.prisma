@@ -149,8 +149,6 @@ model m_recipe {
 
   // 👇 One-to-many relationship with recipe details
   details        m_recipe_details[]
-
-
 }
 
 

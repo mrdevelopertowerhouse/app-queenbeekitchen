@@ -1,6 +1,16 @@
-import prisma from "@/prisma/client";
-import { CuisineCreateDTO } from "@/shared/dto/cuisine.dto";
+import prisma, { Prisma } from "@/prisma/client";
+// import prisma from "@/prisma/client";
+import { CuisineCreateDTO, CuisineUpdateDTO } from "@/shared/dto/cuisine.dto";
 import { m_cuisine } from "@prisma/client";
+import App from "next/app";
+import { AppPrismaError } from "../errors/AppPrismaError";
+import { CuisineUniqueConstraints } from "@/shared/types/CuisineUniqueConstraints";
+import { NotFoundError } from "../errors/NotFoundError";
+
+
+enum ErrorCode {
+    CUISINE_NOT_FOUND = "CUISINE_NOT_FOUND"
+}
 
 class CuisineService {
     static getInstance() {
@@ -25,21 +35,21 @@ class CuisineService {
             return savedCuisine;
         } catch (error) {
             console.error("❌ Error while creating cuisine:", error);
+
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                AppPrismaError.handle<m_cuisine, CuisineUniqueConstraints>(error, {
+                    unique: [
+                        {
+                            field: 'name',
+                            message: `Cuisine with name '${data.name}' already exists.`,
+                        },
+                    ],
+                });
+            }
             throw error; // Re-throw to handle in controller
         }
     }
 
-
-    // static async createCuisine(data: { name: string; description?: string }, creatorId: number) {
-    //     return prisma.m_cuisine.create({
-    //         data: {
-    //             name: data.name,
-    //             description: data.description || null,
-    //             createdBy: creatorId,
-    //             updatedBy: creatorId,
-    //         },
-    //     });
-    // }
 
     static async getAllCuisines(): Promise<Partial<m_cuisine>[]> {
         const cuisines = await prisma.m_cuisine.findMany({
@@ -60,13 +70,15 @@ class CuisineService {
     }
 
 
+
     static async getCuisineById(id: number) {
         const cuisine = await prisma.m_cuisine.findUnique({
-            where: { id },
+            where: { id, delFlag: false },
             select: { id: true, name: true, description: true, delFlag: true },
         });
 
-        if (!cuisine || cuisine.delFlag) return null;
+        // Guard: if cuisine not found, throw error
+        if (!cuisine) throw new NotFoundError(ErrorCode.CUISINE_NOT_FOUND);
 
         return {
             id: cuisine.id,
@@ -76,43 +88,67 @@ class CuisineService {
     }
 
 
-    static async updateCuisine(id: number, data: any, updaterId: number) {
-        return prisma.m_cuisine.update({
-            where: { id },
-            data: {
-                name: data.name,
-                description: data.description,
-                updatedBy: updaterId,
-            },
-            select: { id: true, name: true, description: true },
-        });
+
+    static async updateCuisine(id: number, data: CuisineUpdateDTO, updaterId: number) {
+        try {
+            const existingCuisine = await prisma.m_cuisine.findUnique({
+                where: { id },
+            });
+
+            if (!existingCuisine) {
+                throw new NotFoundError("CUISINE_NOT_FOUND");
+            }
+
+            const updatedCuisine = await prisma.m_cuisine.update({
+                where: { id },
+                data: {
+                    name: data.name,
+                    description: data.description?.trim() || null,
+                    updatedBy: updaterId,
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    description: true,
+                },
+            });
+
+            return updatedCuisine; // ✅ return so controller can use it
+        } catch (error) {
+            console.error("❌ Error while updating cuisine:", error);
+
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                AppPrismaError.handle<m_cuisine, CuisineUniqueConstraints>(error, {
+                    unique: [
+                        {
+                            field: "name",
+                            message: `Cuisine with name '${data.name}' already exists.`,
+                        },
+                    ],
+                });
+            }
+
+            throw error;
+        }
     }
 
-
     static async softDeleteCuisine(id: number, delFlag: boolean, updaterId: number) {
-        // Check first if the record exists and is not already deleted
-        const cuisine = await prisma.m_cuisine.findUnique({
-            where: { id },
-            select: { id: true, delFlag: true },
-        });
 
-        if (!cuisine) {
-            throw new Error("Cuisine not found");
-        }
-
-        if (cuisine.delFlag && delFlag) {
-            throw new Error("Cuisine already deleted");
-        }
-
-        return prisma.m_cuisine.update({
+        const cuisine = await prisma.m_cuisine.update({
             where: { id },
             data: {
                 delFlag,
                 updatedBy: updaterId,
             },
         });
-    }
 
+        // Guard: if cuisine not found, throw error
+        if (!cuisine) {
+            throw new NotFoundError(ErrorCode.CUISINE_NOT_FOUND); // ✅ Throw error explicitly
+        }
+
+        return cuisine;
+    }
 }
 
 export default CuisineService;

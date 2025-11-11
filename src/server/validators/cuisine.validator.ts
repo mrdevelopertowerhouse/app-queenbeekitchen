@@ -19,11 +19,25 @@ export class RequestValidator {
     public static createCuisine(data: CuisineCreateDTO): void {
 
         const cuisineSchema = Joi.object({
-            name: Joi.string().required(),
-            description: Joi.string().optional(),
+            name: Joi.string()
+                .min(1)
+                .max(191)
+                .trim() // ✅ Removes leading and trailing spaces
+                .required()
+                .messages({
+                    "string.empty": "Cuisine name is required",
+                    "string.min": "Cuisine name must be at least 1 character long",
+                    "string.max": "Cuisine name must not exceed 191 characters",
+                }),
 
+            description: Joi.string()
+                .optional()
+                .trim() // ✅ Removes leading/trailing spaces if provided
+                .max(500)
+                .messages({
+                    "string.max": "Description must not exceed 500 characters",
+                }),
         });
-
         const { error } = cuisineSchema.validate(data, { abortEarly: false });
 
         if (error)
