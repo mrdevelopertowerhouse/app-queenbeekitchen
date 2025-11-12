@@ -13,10 +13,20 @@ enum ErrorCode {
 }
 
 class CuisineService {
-    static getInstance() {
-        throw new Error("Method not implemented.");
-    }
 
+
+    /**
+     * 
+     * Create a new cuisine 
+     * 
+     * - Handles unique constraint violations for cuisine name  
+     * 
+     * @param data CreateCuisineDTO containing cuisine details
+     * @throws Prisma.PrismaClientKnownRequestError for unique constraint violations 
+     * @returns Partial<m_cuisine> - an object object with only selected fields
+     * 
+     * @throws HttpError - to be handled by the caller (controller/middleware) for proper HTTP response mapping
+     */
     static async createCuisine(data: CuisineCreateDTO, creatorId: number): Promise<Partial<m_cuisine>> {
         try {
             const savedCuisine = await prisma.m_cuisine.create({
@@ -34,7 +44,6 @@ class CuisineService {
             });
             return savedCuisine;
         } catch (error) {
-            console.error("❌ Error while creating cuisine:", error);
 
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
                 AppPrismaError.handle<m_cuisine, CuisineUniqueConstraints>(error, {
@@ -50,6 +59,12 @@ class CuisineService {
         }
     }
 
+    /**
+     * 
+     * Get all cuisines that are not soft-deleted
+     * 
+     * @returns Promise<Partial<m_cuisine>[]> - array of cuisine objects with only selected fields
+     */
 
     static async getAllCuisines(): Promise<Partial<m_cuisine>[]> {
         const cuisines = await prisma.m_cuisine.findMany({
@@ -69,7 +84,14 @@ class CuisineService {
         return cuisines;
     }
 
-
+    /**
+     * 
+     * Get a cuisine by its ID
+     * @param id Cuisine ID 
+     * @returns  Promise<Partial<m_cuisine>> - cuisine object with only selected fields
+     * 
+     * @throws NotFoundError if cuisine with given ID does not exist
+     */
     static async getCuisineById(id: number) {
 
         const cuisine = await prisma.m_cuisine.findUnique({
@@ -87,43 +109,18 @@ class CuisineService {
         };
     }
 
-
-    //  export const updateVehicle = async (req: Request, res: Response) => {
-
-    //   try {
-
-    //     /** Validate Role */
-    //     Controller.validateRole(req, ['super-admin', 'admin', 'manager']);
-
-    //     /* Request body validation */
-    //     RequestValidator.updateVehicle(req.body);
-
-    //     // Update vehicle
-    //     const { id } = req.params;
-    //     const updated = await vehicleService.updateVehicle(Number(id), req.body);
-
-    //     // If update is successful, return the response
-    //     res.status(200).json(Controller.jsonResponse({
-    //       statusCode: updated ? 1 : 0,
-    //       message: updated ? "Vehicle updated successfully" : "Vehicle not found",
-    //       data: updated
-    //     }));
-
-    //   } catch (error) {
-    //     //  console.error("UserController:", error);
-
-    //     // Handle HttpError specifically
-    //     if (error instanceof HttpError)
-    //       return res.status(error.status).json(error.toJson());
-
-    //     // Handle other errors
-    //     res.status(500).json(Controller.errorResponse({
-    //       error: error,
-    //       message: "Failed to update vehicle"
-    //     }));
-    //   }
-    // }
-
+    /**
+     * 
+     * Update a cuisine by its ID
+     * 
+     * @param id Cuisine ID
+     * @param data  CuisineUpdateDTO containing updated cuisine details
+     * @param updaterId  ID of the user performing the update
+     * @returns  Promise<Partial<m_cuisine>> - updated cuisine object with only selected fields
+     * 
+     * @throws NotFoundError if cuisine with given ID does not exist
+     * @throws Prisma.PrismaClientKnownRequestError for unique constraint violations
+     */
     static async updateCuisine(id: number, data: CuisineUpdateDTO, updaterId: number) {
         try {
 
@@ -165,7 +162,17 @@ class CuisineService {
         }
     }
 
-
+    /**
+     * 
+     * Soft delete a cuisine by setting its delFlag
+     * 
+     * @param id Cuisine ID
+     * @param delFlag   Boolean flag to indicate soft deletion
+     * @param updaterId  ID of the user performing the deletion
+     * @returns  Promise<m_cuisine> - the soft-deleted cuisine object
+     * 
+     * @throws NotFoundError if cuisine with given ID does not exist
+     */
     static async softDeleteCuisine(id: number, delFlag: boolean, updaterId: number) {
 
         const cuisine = await prisma.m_cuisine.update({

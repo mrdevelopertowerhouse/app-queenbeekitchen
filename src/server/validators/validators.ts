@@ -18,6 +18,11 @@ export class RequestValidator {
         return parsed as number;
     }
 
+    /**
+     * Validate soft delete update DTO
+     * @param data  SoftDeleteUpdateDTO
+     * @throws BadRequestError if validation fails
+     */
     public static validateSoftDelete(data: SoftDeleteUpdateDTO): void {
         const cuisineSchema = Joi.object({
             delFlag: Joi.boolean()

@@ -9,7 +9,6 @@ import { CuisineUpdateDTO } from "@/shared/dto/cuisine.dto";
 
 export class CuisineController {
 
-
     static async createCuisine(req: NextRequest) {
         try {
             // ✅ Parse the request body first
@@ -61,6 +60,7 @@ export class CuisineController {
             //    );
         }
     }
+
 
     static async getAllCuisines() {
         try {

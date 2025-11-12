@@ -16,6 +16,7 @@ export class Controller {
         return response;
     }
 
+    // Error response method
     public static errorResponse(err: { message: string, error: Error | unknown }) {
         if (process.env.DEBUG === 'true')
             return { message: err.message || 'Something went wrong', error: err.error };
