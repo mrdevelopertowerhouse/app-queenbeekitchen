@@ -70,8 +70,8 @@ class CuisineService {
     }
 
 
-
     static async getCuisineById(id: number) {
+
         const cuisine = await prisma.m_cuisine.findUnique({
             where: { id, delFlag: false },
             select: { id: true, name: true, description: true, delFlag: true },
@@ -88,16 +88,44 @@ class CuisineService {
     }
 
 
+    //  export const updateVehicle = async (req: Request, res: Response) => {
+
+    //   try {
+
+    //     /** Validate Role */
+    //     Controller.validateRole(req, ['super-admin', 'admin', 'manager']);
+
+    //     /* Request body validation */
+    //     RequestValidator.updateVehicle(req.body);
+
+    //     // Update vehicle
+    //     const { id } = req.params;
+    //     const updated = await vehicleService.updateVehicle(Number(id), req.body);
+
+    //     // If update is successful, return the response
+    //     res.status(200).json(Controller.jsonResponse({
+    //       statusCode: updated ? 1 : 0,
+    //       message: updated ? "Vehicle updated successfully" : "Vehicle not found",
+    //       data: updated
+    //     }));
+
+    //   } catch (error) {
+    //     //  console.error("UserController:", error);
+
+    //     // Handle HttpError specifically
+    //     if (error instanceof HttpError)
+    //       return res.status(error.status).json(error.toJson());
+
+    //     // Handle other errors
+    //     res.status(500).json(Controller.errorResponse({
+    //       error: error,
+    //       message: "Failed to update vehicle"
+    //     }));
+    //   }
+    // }
 
     static async updateCuisine(id: number, data: CuisineUpdateDTO, updaterId: number) {
         try {
-            const existingCuisine = await prisma.m_cuisine.findUnique({
-                where: { id },
-            });
-
-            if (!existingCuisine) {
-                throw new NotFoundError("CUISINE_NOT_FOUND");
-            }
 
             const updatedCuisine = await prisma.m_cuisine.update({
                 where: { id },
@@ -113,7 +141,12 @@ class CuisineService {
                 },
             });
 
-            return updatedCuisine; // ✅ return so controller can use it
+            if (!updatedCuisine) {
+                throw new NotFoundError("CUISINE_NOT_FOUND");
+            }
+
+            return updatedCuisine;
+
         } catch (error) {
             console.error("❌ Error while updating cuisine:", error);
 
@@ -132,6 +165,7 @@ class CuisineService {
         }
     }
 
+
     static async softDeleteCuisine(id: number, delFlag: boolean, updaterId: number) {
 
         const cuisine = await prisma.m_cuisine.update({
@@ -144,7 +178,7 @@ class CuisineService {
 
         // Guard: if cuisine not found, throw error
         if (!cuisine) {
-            throw new NotFoundError(ErrorCode.CUISINE_NOT_FOUND); // ✅ Throw error explicitly
+            throw new NotFoundError(ErrorCode.CUISINE_NOT_FOUND);
         }
 
         return cuisine;

@@ -6,3 +6,7 @@ export interface ResponseDTO<T = any> {
     data?: T | T[] | null;
     pagination?: Pagination | null;
 }
+
+export interface SoftDeleteUpdateDTO {
+    delFlag: boolean;
+}

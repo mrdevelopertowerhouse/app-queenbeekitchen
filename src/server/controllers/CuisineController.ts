@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import CuisineService from "@/server/services/CuisineService";
-import { RequestValidator } from "../validators/cuisine.validator";
+import { CuisineRequestValidator } from "../validators/cuisine.validator";
 import { Controller } from "./Controller";
 import { HttpError } from "../errors/httpError";
+import { RequestValidator } from "../validators/validators";
+import { SoftDeleteUpdateDTO } from "@/shared/dto/common.dto";
+import { CuisineUpdateDTO } from "@/shared/dto/cuisine.dto";
 
 export class CuisineController {
-
-    static creatorId = 1;
 
 
     static async createCuisine(req: NextRequest) {
@@ -15,12 +16,9 @@ export class CuisineController {
             const body = await req.json();
 
             // ✅ Validate the body after parsing
-            RequestValidator.createCuisine(body);
+            CuisineRequestValidator.createCuisine(body);
 
-            // 👇 This uses the static value 0
-            const creatorId = CuisineController.creatorId;
-
-            const cuisine = await CuisineService.createCuisine(body, creatorId);
+            const cuisine = await CuisineService.createCuisine(body, 1);
 
             // ✅ Return only selected fields
             const responseData = {
@@ -90,15 +88,19 @@ export class CuisineController {
     }
 
 
-    static async getCuisineById(req: NextRequest, id: number) {
+    static async getCuisineById(id: string) {
         try {
-            const cuisine = await CuisineService.getCuisineById(id);
+
+            RequestValidator.validateNumericParam(id)
+
+            const cuisine = await CuisineService.getCuisineById(Number(id));
 
             return NextResponse.json(Controller.jsonResponse({
                 statusCode: cuisine ? 1 : 0,
                 message: cuisine ? "Cuisine fetched successfully" : "Cuisine not found",
                 data: cuisine,
             }), { status: 200 })
+
         } catch (error) {
             if (error instanceof HttpError) {
                 return NextResponse.json(error.toJson(), { status: error.status });
@@ -112,14 +114,24 @@ export class CuisineController {
     }
 
 
-    static async updateCuisine(req: NextRequest, id: number) {
+    static async updateCuisine(req: NextRequest, id: string) {
+
         try {
-            const updated = await CuisineService.updateCuisine(id, await req.json(), CuisineController.creatorId);
+
+            const cuisineId = RequestValidator.validateNumericParam(id);
+
+            // parse the request body to get delFlag
+            const body = await req.json() as CuisineUpdateDTO;
+
+            // ✅ Use the correct validator
+            CuisineRequestValidator.updateCuisine(body);
+
+            const cuisine = await CuisineService.updateCuisine(cuisineId, body, 1);
 
             return NextResponse.json(Controller.jsonResponse({
-                statusCode: updated ? 1 : 0,
-                message: updated ? "Cuisine updated successfully" : "Cuisine not found",
-                data: updated,
+                statusCode: 1,
+                message: "Cuisine updated successfully",
+                data: cuisine,
             }), { status: 200 });
 
 
@@ -137,16 +149,26 @@ export class CuisineController {
     }
 
 
-    static async softDeleteCuisine(id: number, delFlag: boolean) {
+    static async softDeleteCuisine(req: NextRequest, id: string) {
 
         try {
-            const deleted = await CuisineService.softDeleteCuisine(id, delFlag, CuisineController.creatorId);
+
+            const cuisineId = RequestValidator.validateNumericParam(id);
+
+            // parse the request body to get delFlag
+            const body = await req.json() as SoftDeleteUpdateDTO;
+
+            RequestValidator.validateSoftDelete(body);
+
+            const deleted = await CuisineService.softDeleteCuisine(cuisineId, body.delFlag, 1);
+
             return NextResponse.json(Controller.jsonResponse({
                 statusCode: deleted ? 1 : 0,
                 message: deleted ? "Cuisine deleted successfully" : "Cuisine not found",
-            }), { status: 204 });
+            }), { status: 200 });
 
         } catch (error) {
+
             if (error instanceof HttpError) {
                 return NextResponse.json(error.toJson(), { status: error.status });
             }
@@ -154,7 +176,6 @@ export class CuisineController {
             return NextResponse.json(Controller.errorResponse({
                 error: error,
                 message: "Cuisine not deleted",
-
             })), { status: 500 };
         }
     }

@@ -1,8 +1,8 @@
 import Joi from "joi";
 import { BadRequestError } from "../errors/BadRequestError";
-import { CuisineCreateDTO } from "@/shared/dto/cuisine.dto";
+import { CuisineCreateDTO, CuisineUpdateDTO } from "@/shared/dto/cuisine.dto";
 
-export class RequestValidator {
+export class CuisineRequestValidator {
 
     /**
      * 
@@ -43,5 +43,50 @@ export class RequestValidator {
         if (error)
             throw new BadRequestError(error);
     }
+
+    /**
+     * 
+     * Use case: Update request body validation
+     * 
+     * Request body validation:
+     * - Validate name is string and required
+     * - Validate description is string and optional
+     * 
+     * @returns true if valid, false otherwise
+     * 
+     * @throws BadRequestError extending HttpError if validation fails
+     */
+    public static updateCuisine(data: CuisineUpdateDTO): void {
+        const cuisineSchema = Joi.object({
+            name: Joi.string()
+                .min(1)
+                .max(191)
+                .trim()
+                .optional() // ✅ optional for updates
+                .messages({
+                    "string.min": "Cuisine name must be at least 1 character long",
+                    "string.max": "Cuisine name must not exceed 191 characters",
+                }),
+
+            description: Joi.string()
+                .allow(null, "") // ✅ allow null or empty
+                .trim()
+                .max(500)
+                .optional()
+                .messages({
+                    "string.max": "Description must not exceed 500 characters",
+                }),
+        });
+
+        const { error } = cuisineSchema.validate(data, { abortEarly: false });
+
+        if (error) {
+            throw new BadRequestError(error);
+        }
+    }
+
+
+
+
 }
 
