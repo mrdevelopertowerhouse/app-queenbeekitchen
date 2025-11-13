@@ -43,6 +43,7 @@ class CuisineService {
                 }
             });
             return savedCuisine;
+
         } catch (error) {
 
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -108,6 +109,7 @@ class CuisineService {
             description: cuisine.description,
         };
     }
+
 
     /**
      * 

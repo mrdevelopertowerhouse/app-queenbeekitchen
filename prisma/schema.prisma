@@ -82,8 +82,8 @@ model m_category {
   updatedByUser  m_user     @relation("CategoryUpdatedBy", fields: [updatedBy], references: [id])
     // 👇 Reverse relation to Recipes
   recipes       m_recipe[]
-
 }
+
 
 model m_language {
   id           Int       @id @default(autoincrement())

@@ -91,9 +91,9 @@ export class CuisineController {
     static async getCuisineById(id: string) {
         try {
 
-            RequestValidator.validateNumericParam(id)
+            const cuisineId = RequestValidator.validateNumericParam(id)
 
-            const cuisine = await CuisineService.getCuisineById(Number(id));
+            const cuisine = await CuisineService.getCuisineById(cuisineId);
 
             return NextResponse.json(Controller.jsonResponse({
                 statusCode: cuisine ? 1 : 0,
@@ -109,7 +109,7 @@ export class CuisineController {
             return NextResponse.json(Controller.errorResponse({
                 error: error,
                 message: "Cuisine not fetched",
-            })), { status: 500 };
+            }), { status: 500 });
         }
     }
 
@@ -144,7 +144,7 @@ export class CuisineController {
             return NextResponse.json(Controller.errorResponse({
                 error: error,
                 message: "Cuisine not updated",
-            })), { status: 500 };
+            }), { status: 500 });
         }
     }
 
@@ -176,7 +176,7 @@ export class CuisineController {
             return NextResponse.json(Controller.errorResponse({
                 error: error,
                 message: "Cuisine not deleted",
-            })), { status: 500 };
+            }), { status: 500 });
         }
     }
 }

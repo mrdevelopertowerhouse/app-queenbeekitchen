@@ -473,9 +473,7 @@ Project Requirement: 05-11-2025
 
                 3. isoCode (Varchar(10), Unique, Not Null)
 
-                4. description (Text, Optional)
-
-                5. created_at (Timestamp, Default: Current Timestamp), created_by (Foreign Key to Users table), updated_at (Timestamp, Default: Current Timestamp on Update), updated_by (Foreign Key to Users table), delFlag (Boolean, Default: False)
+                4. created_at (Timestamp, Default: Current Timestamp), created_by (Foreign Key to Users table), updated_at (Timestamp, Default: Current Timestamp on Update), updated_by (Foreign Key to Users table), delFlag (Boolean, Default: False)
 
         iv. Relationships
 
@@ -492,8 +490,7 @@ Project Requirement: 05-11-2025
 
                     {
                         "name": "English",
-                        "isoCode": "en",
-                        "description": "English Language"
+                        "isoCode": "en"
                     }
 
                 Response:
@@ -501,8 +498,7 @@ Project Requirement: 05-11-2025
                     {
                         "id": 1,
                         "name": "English",
-                        "isoCode": "en",
-                        "description": "English Language",
+                        "isoCode": "en"
                     }
 
                 Validations:
@@ -511,7 +507,6 @@ Project Requirement: 05-11-2025
 
                     - isoCode: Required, Unique
 
-                    - description: Optional
 
             2. GET /api/languages - Retrieve all Languages
 
@@ -523,14 +518,12 @@ Project Requirement: 05-11-2025
                         {
                             "id": 1,
                             "name": "English",
-                            "isoCode": "en",
-                            "description": "English Language",
+                            "isoCode": "en"
                         },
                         {
                             "id": 2,
                             "name": "French",
-                            "isoCode": "fr",
-                            "description": "French Language",
+                            "isoCode": "fr"
                         }   
                     ]
 
@@ -542,8 +535,7 @@ Project Requirement: 05-11-2025
                     {
                         "id": 1,
                         "name": "English",
-                        "isoCode": "en",
-                        "description": "English Language",
+                        "isoCode": "en"
                     }
 
             4. PUT /api/languages/{id} - Update a specific Language by ID          
@@ -555,7 +547,6 @@ Project Requirement: 05-11-2025
                     {
                         "name": "English",
                         "isoCode": "en",
-                        "description": "English Language"
                     }
 
                 Response:
@@ -564,7 +555,6 @@ Project Requirement: 05-11-2025
                         "id": 1,
                         "name": "English",
                         "isoCode": "en",
-                        "description": "English Language",
                     }
 
                 Validations:
@@ -573,8 +563,6 @@ Project Requirement: 05-11-2025
 
                     - isoCode: Required, Unique
 
-                    - description: Optional
-                
             5. PATCH /api/languages/{id} - Soft delete a specific Language by ID (set delFlag to True)        
 
                 HTTP Status: 204 No Content
@@ -589,7 +577,7 @@ Project Requirement: 05-11-2025
 
                     - delFlag: Required, Boolean
 
-        Field: name, isoCode (eg: en, fr, es), description (optional)
+        Field: name, isoCode (eg: en, fr, es)
 
         
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import LanguageService from "@/server/services/LanguageService";
+import { LanguageController } from "@/server/controllers/LanguageController";
 
 // ✅ Unified success response
 function jsonResponse({
@@ -32,63 +33,68 @@ function errorResponse({
  * @desc    Create a new language
  * @access  Authenticated (replace static user later)
  */
+// ✅ POST /api/cuisines
 export async function POST(req: NextRequest) {
-    try {
-        const body = await req.json();
-        const { name, isoCode, description } = body;
-
-        // ✅ Validations
-        if (!name) {
-            return NextResponse.json(
-                errorResponse({
-                    error: new Error("Name is required"),
-                    message: "Validation failed",
-                }),
-                { status: 400 }
-            );
-        }
-
-        if (!isoCode) {
-            return NextResponse.json(
-                errorResponse({
-                    error: new Error("ISO Code is required"),
-                    message: "Validation failed",
-                }),
-                { status: 400 }
-            );
-        }
-
-        const creatorId = 1; // TODO: replace with actual logged-in user ID
-
-        const language = await LanguageService.createLanguage(
-            { name, isoCode, description },
-            creatorId
-        );
-
-        const responseData = {
-            id: language.id,
-            name: language.name,
-            isoCode: language.isoCode,
-            description: language.description,
-        };
-
-        return NextResponse.json(
-            jsonResponse({
-                message: "Language created successfully",
-                data: responseData,
-            }),
-            { status: 201 }
-        );
-    } catch (error: unknown) {
-        return NextResponse.json(
-            errorResponse({
-                error,
-                message: "Failed to create language",
-            }),
-            { status: 500 }
-        );
-    }
+    return await LanguageController.createLanguage(req);
 }
+
+// export async function POST(req: NextRequest) {
+//     try {
+//         const body = await req.json();
+//         const { name, isoCode, description } = body;
+
+//         // ✅ Validations
+//         if (!name) {
+//             return NextResponse.json(
+//                 errorResponse({
+//                     error: new Error("Name is required"),
+//                     message: "Validation failed",
+//                 }),
+//                 { status: 400 }
+//             );
+//         }
+
+//         if (!isoCode) {
+//             return NextResponse.json(
+//                 errorResponse({
+//                     error: new Error("ISO Code is required"),
+//                     message: "Validation failed",
+//                 }),
+//                 { status: 400 }
+//             );
+//         }
+
+//         const creatorId = 1; // TODO: replace with actual logged-in user ID
+
+//         const language = await LanguageService.createLanguage(
+//             { name, isoCode, description },
+//             creatorId
+//         );
+
+//         const responseData = {
+//             id: language.id,
+//             name: language.name,
+//             isoCode: language.isoCode,
+//             description: language.description,
+//         };
+
+//         return NextResponse.json(
+//             jsonResponse({
+//                 message: "Language created successfully",
+//                 data: responseData,
+//             }),
+//             { status: 201 }
+//         );
+//     } catch (error: unknown) {
+//         return NextResponse.json(
+//             errorResponse({
+//                 error,
+//                 message: "Failed to create language",
+//             }),
+//             { status: 500 }
+//         );
+//     }
+// }
 
 
 /**

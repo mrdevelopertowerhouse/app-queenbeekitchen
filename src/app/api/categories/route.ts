@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import CategoryService from "@/server/services/CategoryService"
+import { CategoryController } from "@/server/controllers/CategoryController";
 
 // ✅ Utility functions for success/error responses
 function jsonResponse({
@@ -28,51 +29,10 @@ function errorResponse({
  * ✅ POST /api/categories
  * Create a new Category
  */
+// ✅ POST /api/categories
 export async function POST(req: NextRequest) {
-    try {
-        const body = await req.json();
-
-        // ✅ Validation
-        if (!body.name || typeof body.name !== "string") {
-            return NextResponse.json(
-                errorResponse({
-                    error: new Error("Name is required"),
-                    message: "Validation failed",
-                }),
-                { status: 400 }
-            );
-        }
-
-        // ✅ Create the category
-        const category = await CategoryService.createCategory(
-            {
-                name: body.name,
-                description: body.description || null,
-            },
-            1 // creatorId (replace with actual userId if available)
-        );
-
-        const responseData = {
-            id: category.id,
-            name: category.name,
-            description: category.description,
-        };
-
-        return NextResponse.json(
-            jsonResponse({
-                message: "Category created successfully",
-                data: responseData,
-            }),
-            { status: 201 }
-        );
-    } catch (error: unknown) {
-        return NextResponse.json(
-            errorResponse({ error, message: "Failed to create category" }),
-            { status: 500 }
-        );
-    }
+    return await CategoryController.createCategory(req);
 }
-
 
 /**
  * @route   GET /api/cuisines

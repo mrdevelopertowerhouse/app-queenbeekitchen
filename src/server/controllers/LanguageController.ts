@@ -1,42 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
+import { LanguageRequestValidator } from "../validators/language.validator";
+import LanguageService from "../services/LanguageService";
 import { Controller } from "./Controller";
 import { HttpError } from "../errors/httpError";
-import { CategoryRequestValidator } from "../validators/category.validator";
-import CategoryService from "../services/CategoryService";
 import { RequestValidator } from "../validators/validators";
-import { CategoryUpdateDTO } from "@/shared/dto/category.dto";
+import { LanguageUpdateDTO } from "@/shared/dto/language.dto";
 import { SoftDeleteUpdateDTO } from "@/shared/dto/common.dto";
 
-export class CategoryController {
+export class LanguageController {
 
-    static async createCategory(req: NextRequest) {
+    static async createLanguage(req: NextRequest) {
         try {
             // ✅ Parse the request body first
             const body = await req.json();
 
             // ✅ Validate the body after parsing
-            CategoryRequestValidator.createCategory(body);
+            LanguageRequestValidator.createLanguage(body);
 
-            const category = await CategoryService.createCategory(body, 1);
+            const language = await LanguageService.createLanguage(body, 1);
 
             // ✅ Return only selected fields
             const responseData = {
-                id: category.id,
-                name: category.name,
-                description: category.description,
+                id: language.id,
+                name: language.name,
+                isoCode: language.isoCode,
             };
 
             return NextResponse.json(
                 Controller.jsonResponse({
                     statusCode: responseData ? 1 : 0,
-                    message: responseData ? "Category created successfully" : "Failed to create category",
+                    message: responseData ? "Cuisine created successfully" : "Failed to create cuisine",
                     data: responseData,
                 }),
                 { status: 201 }
             );
 
         } catch (error: unknown) {
-            console.error("🔥 Controller error in createCategory", error);
+            console.error("🔥 Controller error in createCuisine:", error);
 
             if (error instanceof HttpError) {
                 return NextResponse.json(error.toJson(), { status: error.status });
@@ -45,22 +45,23 @@ export class CategoryController {
             return NextResponse.json(
                 Controller.errorResponse({
                     error: error,
-                    message: "Failed to create category",
+                    message: "Failed to create cuisine",
                 }),
                 { status: 500 }
             );
         }
     }
 
-    static async getAllCategories() {
+
+    static async getAllLanguages() {
         try {
-            const categories = await CategoryService.getAllCategories();
+            const languages = await LanguageService.getAllLanguages();
 
             return NextResponse.json(
                 Controller.jsonResponse({
-                    statusCode: categories && categories.length > 0 ? 1 : 0,
-                    message: categories && categories.length > 0 ? "Categories fetched successfully" : "No categories found",
-                    data: categories,
+                    statusCode: languages && languages.length > 0 ? 1 : 0,
+                    message: languages && languages.length > 0 ? "Languages fetched successfully" : "No languages found",
+                    data: languages,
                 }),
                 { status: 200 }
             );
@@ -72,24 +73,55 @@ export class CategoryController {
 
             return NextResponse.json(Controller.errorResponse({
                 error: error,
-                message: "Failed to fetch categories",
+                message: "Failed to fetch languages",
             }), { status: 500 });
         }
     }
 
 
-    static async getCategoryById(id: string) {
+    static async getLanguageById(id: string) {
         try {
+            const languageId = RequestValidator.validateNumericParam(id);
 
-            RequestValidator.validateNumericParam(id);
-
-            const category = await CategoryService.getCategoryById(Number(id));
+            const language = await LanguageService.getLanguageById(languageId);
 
             return NextResponse.json(Controller.jsonResponse({
-                statusCode: category ? 1 : 0,
-                message: category ? "Category fetched successfully" : "Category not found",
-                data: category,
+                statusCode: language ? 1 : 0,
+                message: language ? "Language fetched successfully" : " Language not found",
+                data: language,
+            }), { status: 200 });
 
+        } catch (error) {
+
+            if (error instanceof HttpError) {
+                return NextResponse.json(error.toJson(), { status: error.status })
+            }
+
+            return NextResponse.json(Controller.errorResponse({
+                error: error,
+                message: "Failed to fetch language",
+            }), { status: 500 });
+        }
+    }
+
+
+    static async updateLanguage(req: NextRequest, id: string) {
+
+        try {
+            const languageId = RequestValidator.validateNumericParam(id);
+
+            // Parse the request body to get delFlag
+            const body = await req.json() as LanguageUpdateDTO;
+
+            //Use the correct validator
+            LanguageRequestValidator.updateLanguage(body);
+
+            const language = await LanguageService.updateLanguage(languageId, body, 1);
+
+            return NextResponse.json(Controller.jsonResponse({
+                statusCode: language ? 1 : 0,
+                message: language ? "Language updated successfully" : "Failed to update language",
+                data: language,
             }), { status: 200 });
 
         } catch (error) {
@@ -99,76 +131,39 @@ export class CategoryController {
 
             return NextResponse.json(Controller.errorResponse({
                 error: error,
-                message: "Failed to fetch category",
-            }), { status: 500 });
+                message: "Failed to update language",
+            }), { status: 500 })
 
         }
     }
 
-
-    static async updateCategory(req: NextRequest, id: string) {
-
+    static async softDeleteLanguage(req: NextRequest, id: string) {
         try {
 
-            const categoryId = RequestValidator.validateNumericParam(id);
-
-            // parse the request body to get delFlag
-            const body = await req.json() as CategoryUpdateDTO;
-
-            // ✅ Use the correct validator
-            CategoryRequestValidator.updateCategory(body);
-
-            const category = await CategoryService.updateCategory(categoryId, body, 1);
-
-            return NextResponse.json(Controller.jsonResponse({
-                statusCode: 1,
-                message: "Category updated successfully",
-                data: category,
-            }), { status: 200 });
-
-
-        } catch (error) {
-
-            if (error instanceof HttpError) {
-                return NextResponse.json(error.toJson(), { status: error.status });
-            }
-
-            return NextResponse.json(Controller.errorResponse({
-                error: error,
-                message: "Category not updated",
-            }), { status: 500 });
-        }
-    }
-
-
-    static async softDeleteCategory(req: NextRequest, id: string) {
-
-        try {
-
-            const categoryId = RequestValidator.validateNumericParam(id);
+            const languageId = RequestValidator.validateNumericParam(id);
 
             // parse the request body to get delFlag
             const body = await req.json() as SoftDeleteUpdateDTO;
 
             RequestValidator.validateSoftDelete(body);
 
-            const deleted = await CategoryService.softDeleteCategory(categoryId, body.delFlag, 1);
+            const deleted = await LanguageService.softDeleteLanguage(languageId, body.delFlag, 1);
 
             return NextResponse.json(Controller.jsonResponse({
                 statusCode: deleted ? 1 : 0,
-                message: deleted ? "Category deleted successfully" : "Category not found",
+                message: deleted ? "Language deleted successfully" : "Language not found",
             }), { status: 200 });
 
-        } catch (error) {
 
+        } catch (error) {
             if (error instanceof HttpError) {
                 return NextResponse.json(error.toJson(), { status: error.status });
             }
 
             return NextResponse.json(Controller.errorResponse({
                 error: error,
-                message: "Category not deleted",
-            }), { status: 500 });
+                message: "Language not deleted",
+            }), { status: 500 })
         }
     }
 
