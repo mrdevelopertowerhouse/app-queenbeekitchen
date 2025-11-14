@@ -2,13 +2,12 @@ import prisma from "@/prisma/client";
 import { FoodTypeCreateDTO, FoodTypeUpdateDTO } from "@/shared/dto/foodtype.dto";
 import { m_food_type, Prisma } from "@prisma/client";
 import { AppPrismaError } from "../errors/AppPrismaError";
-import { FoodTypeUniqueConstraints } from "@/shared/types/FoodTypeUniqueConstraints";
 import { NotFoundError } from "../errors/NotFoundError";
+import { FoodTypeUniqueConstraints } from "../prisma/UniqueConstraints";
 
 enum ErrorCode {
     FOODTYPE_NOT_FOUND = "FOODTYPE_NOT_FOUND"
 }
-
 
 class FoodTypeService {
 
@@ -45,6 +44,7 @@ class FoodTypeService {
 
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
                 AppPrismaError.handle<m_food_type, FoodTypeUniqueConstraints>(error, {
+                    fk: ['createdBy', 'updatedBy'],
                     unique: [
                         {
                             field: 'name',
@@ -149,12 +149,15 @@ class FoodTypeService {
 
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
                 AppPrismaError.handle<m_food_type, FoodTypeUniqueConstraints>(error, {
+                    fk: ['updatedBy'],
                     unique: [
                         {
                             field: "name",
                             message: `Foodtype with name '${data.name}' already exists.`,
                         },
                     ],
+                    notFound: { errorCode: ErrorCode.FOODTYPE_NOT_FOUND }
+
                 });
             }
 
@@ -176,20 +179,28 @@ class FoodTypeService {
      */
     static async softDeleteFoodType(id: number, delFlag: boolean, updaterId: number) {
 
-        const foodType = await prisma.m_food_type.update({
-            where: { id },
-            data: {
-                delFlag,
-                updatedBy: updaterId,
-            },
-        });
+        try {
+            const foodType = await prisma.m_food_type.update({
+                where: { id },
+                data: {
+                    delFlag,
+                    updatedBy: updaterId,
+                },
+            });
 
-        // Guard: if cuisine not found, throw error
-        if (!foodType) {
-            throw new NotFoundError(ErrorCode.FOODTYPE_NOT_FOUND);
+            return foodType;
+        } catch (error) {
+
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                AppPrismaError.handle<m_food_type, FoodTypeUniqueConstraints>(error, {
+                    fk: ['updatedBy'],
+                    notFound: { errorCode: ErrorCode.FOODTYPE_NOT_FOUND }
+
+                });
+            }
+
+            throw error;
         }
-
-        return foodType;
     }
 }
 

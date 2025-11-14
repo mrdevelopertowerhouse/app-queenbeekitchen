@@ -1,9 +1,9 @@
 import prisma, { Prisma } from "@/prisma/client";
 import { LanguageCreateDTO, LanguageUpdateDTO } from "@/shared/dto/language.dto";
 import { AppPrismaError } from "../errors/AppPrismaError";
-import { LanguageUniqueConstraints } from "@/shared/types/LanguageUniqueConstraints";
 import { m_language } from "@prisma/client";
 import { NotFoundError } from "../errors/NotFoundError";
+import { LanguageUniqueConstraints } from "../prisma/UniqueConstraints";
 
 
 enum ErrorCode {
@@ -44,6 +44,7 @@ class LanguageService {
 
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
                 AppPrismaError.handle<m_language, LanguageUniqueConstraints>(error, {
+                    fk: ['createdBy', 'updatedBy'],
                     unique: [
                         {
                             field: 'name',
@@ -151,6 +152,7 @@ class LanguageService {
 
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
                 AppPrismaError.handle<m_language, LanguageUniqueConstraints>(error, {
+                    fk: ['updatedBy'],
                     unique: [
                         {
                             field: 'name',
@@ -161,6 +163,7 @@ class LanguageService {
                             message: `Language with ISO code '${data.isoCode}' already exists.`,
                         },
                     ],
+                    notFound: { errorCode: ErrorCode.LANGUAGE_NOT_FOUND }
                 });
             }
             throw error;
@@ -179,20 +182,29 @@ class LanguageService {
      */
     static async softDeleteLanguage(id: number, delFlag: boolean, updaterId: number) {
 
-        const language = await prisma.m_language.update({
-            where: { id },
-            data: {
-                delFlag,
-                updatedBy: updaterId,
-            },
-        });
+        try {
+            const language = await prisma.m_language.update({
+                where: { id },
+                data: {
+                    delFlag,
+                    updatedBy: updaterId,
+                },
+            });
+            return language;
 
-        // Guard: if language not found, throw error
-        if (!language) {
-            throw new NotFoundError(ErrorCode.LANGUAGE_NOT_FOUND)
+        } catch (error) {
+
+
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                AppPrismaError.handle<m_language, LanguageUniqueConstraints>(error, {
+                    fk: ['updatedBy'],
+                    notFound: { errorCode: ErrorCode.LANGUAGE_NOT_FOUND }
+                });
+            }
+            throw error;
+
+
         }
-
-        return language;
     }
 }
 

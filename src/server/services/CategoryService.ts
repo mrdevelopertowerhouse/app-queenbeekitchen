@@ -2,9 +2,8 @@ import prisma, { Prisma } from "@/prisma/client";
 import { CategoryCreateDTO, CategoryUpdateDTO } from "@/shared/dto/category.dto";
 import { AppPrismaError } from "../errors/AppPrismaError";
 import { m_category } from "@prisma/client";
-import { CuisineUniqueConstraints } from "@/shared/types/CuisineUniqueConstraints";
-import { CategoryUniqueConstraints } from "@/shared/types/CategoryUniqueConstraints";
 import { NotFoundError } from "../errors/NotFoundError";
+import { CategoryUniqueConstraints } from "../prisma/UniqueConstraints";
 
 
 enum ErrorCode {
@@ -45,6 +44,7 @@ class CategoryService {
 
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
                 AppPrismaError.handle<m_category, CategoryUniqueConstraints>(error, {
+                    fk: ['createdBy', 'updatedBy'],
                     unique: [
                         {
                             field: 'name',
@@ -106,7 +106,6 @@ class CategoryService {
             name: category.name,
             description: category.description,
         };
-
     }
 
     /**
@@ -138,23 +137,21 @@ class CategoryService {
                 },
             });
 
-            if (!updatedCategory) {
-                throw new NotFoundError("CATEGORY_NOT_FOUND");
-            }
-
             return updatedCategory;
 
         } catch (error) {
-            console.error("❌ Error while updating category:", error);
+
 
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
                 AppPrismaError.handle<m_category, CategoryUniqueConstraints>(error, {
+                    fk: ['updatedBy'],
                     unique: [
                         {
                             field: "name",
                             message: `Category with name '${data.name}' already exists.`,
                         },
                     ],
+                    notFound: { errorCode: "CATEGORY_NOT_FOUND" }
                 });
             }
 
@@ -175,20 +172,29 @@ class CategoryService {
      */
     static async softDeleteCategory(id: number, delFlag: boolean, updaterId: number) {
 
-        const category = await prisma.m_category.update({
-            where: { id },
-            data: {
-                delFlag,
-                updatedBy: updaterId,
-            },
-        });
+        try {
+            const category = await prisma.m_category.update({
+                where: { id },
+                data: {
+                    delFlag,
+                    updatedBy: updaterId,
+                },
+            });
 
-        // Guard: if category not found, throw error
-        if (!category) {
-            throw new NotFoundError(ErrorCode.CATEGORY_NOT_FOUND);
+            return category;
+
+        } catch (error) {
+
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                AppPrismaError.handle<m_category, CategoryUniqueConstraints>(error, {
+                    fk: ['updatedBy'],
+                    notFound: { errorCode: ErrorCode.CATEGORY_NOT_FOUND }
+                });
+            }
+
+            throw error;
+
         }
-
-        return category;
     }
 }
 

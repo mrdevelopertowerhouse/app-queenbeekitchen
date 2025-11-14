@@ -605,15 +605,15 @@ Project Requirement: 05-11-2025
 
                 3. categoryId (Foreign Key to Category table)
 
-                4. uuid (Varchar(100), Unique, Not Null)
+                4. foodtypeId (Foreign Key to Food_type table)
 
-                5. foodtypeId (Foreign Key to Food_type table)
+                5. recipe_uuid (Varchar(191), Unique, Not Null)
 
-                6. regional_name (Varchar(255))
+                6. title_name (Varchar(191))
 
-                7. imageUrl (Varchar(255), Optional)
+                7. imageUrl (Varchar(191), Optional)
 
-                8. videoUrl (Varchar(255), Optional)
+                8. videoUrl (Varchar(191), Optional)
 
                 9. created_at (Timestamp, Default: Current Timestamp), created_by (Foreign Key to Users table), updated_at (Timestamp, Default: Current Timestamp on Update), updated_by (Foreign Key to Users table), delFlag (Boolean, Default: False)
 
@@ -627,15 +627,13 @@ Project Requirement: 05-11-2025
 
                 3. languageId (Foreign Key to Language table)
 
-                4. name (Varchar(255), Not Null)
+                4. name (Varchar(191), Not Null)
 
                 5. instructions (Text, Not Null)
 
                 6. ingredients (Text, Not Null)
 
-                7. notes (Text, Optional)
-
-                8. created_at (Timestamp, Default: Current Timestamp), created_by (Foreign Key to Users table), updated_at (Timestamp, Default: Current Timestamp on Update), updated_by (Foreign Key to Users table), delFlag (Boolean, Default: False)
+                7. created_at (Timestamp, Default: Current Timestamp), created_by (Foreign Key to Users table), updated_at (Timestamp, Default: Current Timestamp on Update), updated_by (Foreign Key to Users table), delFlag (Boolean, Default: False)
             
         iv. Relationships
 

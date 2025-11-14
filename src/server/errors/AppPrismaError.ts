@@ -18,19 +18,22 @@ export class AppPrismaError {
      */
     public static handle<S, T>(
         error: unknown,
-        fields: {
-            fk?: (keyof S)[]; // ✅ support foreign key violations
+        errorMap: {
+            /** Foreign Key constraint: Model property names used to detect Foreign Key constraint errors (P2003) */
+            fk?: (keyof S)[];
+            /** Unique constraint mappings: model property -> user-friendly message (used for P2002) */
             unique?: { field: keyof T; message: string }[];
-            whereNotFound?: { errorCode: string }
+            /** Record not found: Map P2025 (record not found) to an application error code */
+            notFound?: { errorCode: string };
         }
     ): void {
         // ✅ Handle Prisma errors
         if (error instanceof Prisma.PrismaClientKnownRequestError) {
-            // 🔹 Unique constraint violation
+            // 🔹 Unique constraint violation (P2002)
             if (error.code === "P2002" && error.meta && "target" in error.meta) {
                 const targetFields = (error.meta.target as string[]) || [];
 
-                for (const { field, message } of fields.unique || []) {
+                for (const { field, message } of errorMap.unique || []) {
                     if (targetFields.includes(field as string)) {
                         throw new ConflictError(
                             message,
@@ -40,16 +43,18 @@ export class AppPrismaError {
                 }
             }
 
-            // 🔹 Foreign key constraint violation
+            // 🔹 Foreign key constraint violation (P2003)
             if (error.code === "P2003" && error.meta && "field_name" in error.meta) {
                 const field = (error.meta.field_name as string) || "unknown_field";
-                if (fields.fk?.includes(field as keyof S)) {
+                if (errorMap.fk?.includes(field as keyof S)) {
                     throw new ForeignKeyViolationError({ field });
                 }
             }
 
-            if (error.code == 'P2025' && fields.whereNotFound)
-                throw new NotFoundError(fields.whereNotFound.errorCode);
+            // 🔹 Record not found (P2025) → map to NotFoundError
+            if (error.code === "P2025" && errorMap.notFound) {
+                throw new NotFoundError(errorMap.notFound.errorCode);
+            }
         }
 
         // Fallback — rethrow anything not handled

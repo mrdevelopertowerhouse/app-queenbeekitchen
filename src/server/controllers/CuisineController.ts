@@ -5,14 +5,14 @@ import { Controller } from "./Controller";
 import { HttpError } from "../errors/httpError";
 import { RequestValidator } from "../validators/validators";
 import { SoftDeleteUpdateDTO } from "@/shared/dto/common.dto";
-import { CuisineUpdateDTO } from "@/shared/dto/cuisine.dto";
+import { CuisineCreateDTO, CuisineUpdateDTO } from "@/shared/dto/cuisine.dto";
 
 export class CuisineController {
 
     static async createCuisine(req: NextRequest) {
         try {
             // ✅ Parse the request body first
-            const body = await req.json();
+            const body = await req.json() as CuisineCreateDTO;
 
             // ✅ Validate the body after parsing
             CuisineRequestValidator.createCuisine(body);
