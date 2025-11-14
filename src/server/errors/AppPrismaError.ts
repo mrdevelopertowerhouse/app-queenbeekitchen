@@ -2,6 +2,7 @@
 import { Prisma } from "@prisma/client";
 import { ConflictError } from "../errors/ConflictError";
 import { ForeignKeyViolationError } from "../errors/ForeignKeyViolationError";
+import { NotFoundError } from "./NotFoundError";
 
 /**
  * Handles known Prisma errors (e.g., unique constraint or foreign key violations)
@@ -20,6 +21,7 @@ export class AppPrismaError {
         fields: {
             fk?: (keyof S)[]; // ✅ support foreign key violations
             unique?: { field: keyof T; message: string }[];
+            whereNotFound?: { errorCode: string }
         }
     ): void {
         // ✅ Handle Prisma errors
@@ -37,7 +39,7 @@ export class AppPrismaError {
                     }
                 }
             }
-            // console.log("Checking for foreign key violations...", error.meta);
+
             // 🔹 Foreign key constraint violation
             if (error.code === "P2003" && error.meta && "field_name" in error.meta) {
                 const field = (error.meta.field_name as string) || "unknown_field";
@@ -45,6 +47,9 @@ export class AppPrismaError {
                     throw new ForeignKeyViolationError({ field });
                 }
             }
+
+            if (error.code == 'P2025' && fields.whereNotFound)
+                throw new NotFoundError(fields.whereNotFound.errorCode);
         }
 
         // Fallback — rethrow anything not handled

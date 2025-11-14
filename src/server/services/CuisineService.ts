@@ -24,7 +24,6 @@ class CuisineService {
      * @param data CreateCuisineDTO containing cuisine details
      * @throws Prisma.PrismaClientKnownRequestError for unique constraint violations 
      * @returns Partial<m_cuisine> - an object object with only selected fields
-     * 
      * @throws HttpError - to be handled by the caller (controller/middleware) for proper HTTP response mapping
      */
     static async createCuisine(data: CuisineCreateDTO, creatorId: number): Promise<Partial<m_cuisine>> {
@@ -140,10 +139,6 @@ class CuisineService {
                 },
             });
 
-            if (!updatedCuisine) {
-                throw new NotFoundError("CUISINE_NOT_FOUND");
-            }
-
             return updatedCuisine;
 
         } catch (error) {
@@ -157,6 +152,7 @@ class CuisineService {
                             message: `Cuisine with name '${data.name}' already exists.`,
                         },
                     ],
+                    whereNotFound: { errorCode: "CUISINE_NOT_FOUND" }
                 });
             }
 

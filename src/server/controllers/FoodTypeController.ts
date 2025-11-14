@@ -1,42 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
-import CuisineService from "@/server/services/CuisineService";
-import { CuisineRequestValidator } from "../validators/cuisine.validator";
+import { FoodTypeRequestValidator } from "../validators/foodtype.validator";
+import FoodTypeService from "../services/FoodTypeService";
 import { Controller } from "./Controller";
 import { HttpError } from "../errors/httpError";
 import { RequestValidator } from "../validators/validators";
+import { FoodTypeUpdateDTO } from "@/shared/dto/foodtype.dto";
 import { SoftDeleteUpdateDTO } from "@/shared/dto/common.dto";
-import { CuisineUpdateDTO } from "@/shared/dto/cuisine.dto";
 
-export class CuisineController {
+export class FoodTypeController {
 
-    static async createCuisine(req: NextRequest) {
+    static async createFoodType(req: NextRequest) {
         try {
             // ✅ Parse the request body first
             const body = await req.json();
 
             // ✅ Validate the body after parsing
-            CuisineRequestValidator.createCuisine(body);
+            FoodTypeRequestValidator.createFoodType(body);
 
-            const cuisine = await CuisineService.createCuisine(body, 1);
+            const foodType = await FoodTypeService.createFoodType(body, 1);
 
             // ✅ Return only selected fields
             const responseData = {
-                id: cuisine.id,
-                name: cuisine.name,
-                description: cuisine.description,
+                id: foodType.id,
+                name: foodType.name,
+                description: foodType.description,
             };
 
             return NextResponse.json(
                 Controller.jsonResponse({
                     statusCode: responseData ? 1 : 0,
-                    message: responseData ? "Cuisine created successfully" : "Failed to create cuisine",
+                    message: responseData ? "Foodtype created successfully" : "Failed to create foodtype",
                     data: responseData,
                 }),
                 { status: 201 }
             );
 
         } catch (error: unknown) {
-            console.error("🔥 Controller error in createCuisine:", error);
+            console.error("🔥 Controller error in createFoodtype:", error);
 
             if (error instanceof HttpError) {
                 return NextResponse.json(error.toJson(), { status: error.status });
@@ -45,32 +45,23 @@ export class CuisineController {
             return NextResponse.json(
                 Controller.errorResponse({
                     error: error,
-                    message: "Failed to create cuisine",
+                    message: "Failed to create foodtype",
                 }),
                 { status: 500 }
             );
-
-            //     return NextResponse.json(Controller.errorResponse(      
-
-            //         {
-            //             error:error,
-            //             message: "Failed to create cuisine",
-            //         },
-            //         { status: 500 }
-            //    );
         }
     }
 
 
-    static async getAllCuisines() {
+    static async getAllFoodTypes() {
         try {
-            const cuisines = await CuisineService.getAllCuisines();
+            const foodTypes = await FoodTypeService.getAllFoodTypes();
 
             return NextResponse.json(
                 Controller.jsonResponse({
-                    statusCode: cuisines && cuisines.length > 0 ? 1 : 0,
-                    message: cuisines && cuisines.length > 0 ? "Cuisines fetched successfully" : "No cuisines found",
-                    data: cuisines,
+                    statusCode: foodTypes && foodTypes.length > 0 ? 1 : 0,
+                    message: foodTypes && foodTypes.length > 0 ? "Foodtypes fetched successfully" : "No foodtypes found",
+                    data: foodTypes,
                 }),
                 { status: 200 }
             );
@@ -82,23 +73,24 @@ export class CuisineController {
 
             return NextResponse.json(Controller.errorResponse({
                 error: error,
-                message: "Failed to fetch cuisines",
+                message: "Failed to fetch foodtypes",
             })), { status: 500 };
         }
     }
 
 
-    static async getCuisineById(id: string) {
+    static async getFoodTypeById(id: string) {
+
         try {
 
-            const cuisineId = RequestValidator.validateNumericParam(id)
+            const foodTypeId = RequestValidator.validateNumericParam(id)
 
-            const cuisine = await CuisineService.getCuisineById(cuisineId);
+            const foodType = await FoodTypeService.getFoodTypeById(foodTypeId);
 
             return NextResponse.json(Controller.jsonResponse({
-                statusCode: cuisine ? 1 : 0,
-                message: cuisine ? "Cuisine fetched successfully" : "Cuisine not found",
-                data: cuisine,
+                statusCode: foodType ? 1 : 0,
+                message: foodType ? "Foodtype fetched successfully" : "Foodtype not found",
+                data: foodType,
             }), { status: 200 })
 
         } catch (error) {
@@ -108,32 +100,31 @@ export class CuisineController {
 
             return NextResponse.json(Controller.errorResponse({
                 error: error,
-                message: "Cuisine not fetched",
+                message: "Foodtype not fetched",
             }), { status: 500 });
         }
     }
 
 
-    static async updateCuisine(req: NextRequest, id: string) {
+    static async updateFoodType(req: NextRequest, id: string) {
 
         try {
 
-            const cuisineId = RequestValidator.validateNumericParam(id);
+            // Validate the 
+            const foodTypeId = RequestValidator.validateNumericParam(id)
 
             // parse the request body to get delFlag
-            const body = await req.json() as CuisineUpdateDTO;
+            const body = await req.json() as FoodTypeUpdateDTO;
 
-            // 
-            CuisineRequestValidator.updateCuisine(body);
+            FoodTypeRequestValidator.updateFoodType(body);
 
-            const cuisine = await CuisineService.updateCuisine(cuisineId, body, 1);
+            const foodType = await FoodTypeService.getFoodTypeById(Number(id));
 
             return NextResponse.json(Controller.jsonResponse({
-                statusCode: cuisine ? 1 : 0,
-                message: "Cuisine updated successfully",
-                data: cuisine,
+                statusCode: foodType ? 1 : 0,
+                message: "Foodtype updated successfully",
+                data: foodType
             }), { status: 200 });
-
 
         } catch (error) {
 
@@ -143,28 +134,29 @@ export class CuisineController {
 
             return NextResponse.json(Controller.errorResponse({
                 error: error,
-                message: "Cuisine not updated",
+                message: "Foodtype not updated",
             }), { status: 500 });
+
         }
     }
 
 
-    static async softDeleteCuisine(req: NextRequest, id: string) {
+    static async softDeleteFoodType(req: NextRequest, id: string) {
 
         try {
 
-            const cuisineId = RequestValidator.validateNumericParam(id);
+            const foodTypeId = RequestValidator.validateNumericParam(id);
 
             // parse the request body to get delFlag
             const body = await req.json() as SoftDeleteUpdateDTO;
 
             RequestValidator.validateSoftDelete(body);
 
-            const deleted = await CuisineService.softDeleteCuisine(cuisineId, body.delFlag, 1);
+            const deleted = await FoodTypeService.softDeleteFoodType(foodTypeId, body.delFlag, 1);
 
             return NextResponse.json(Controller.jsonResponse({
                 statusCode: deleted ? 1 : 0,
-                message: deleted ? "Cuisine deleted successfully" : "Cuisine not found",
+                message: deleted ? "Foodtype deleted successfully" : "Foodtype not found",
             }), { status: 200 });
 
         } catch (error) {
@@ -175,10 +167,8 @@ export class CuisineController {
 
             return NextResponse.json(Controller.errorResponse({
                 error: error,
-                message: "Cuisine not deleted",
+                message: "Foodtype not deleted",
             }), { status: 500 });
         }
     }
 }
-
-export default CuisineController;
