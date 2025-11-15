@@ -3,7 +3,8 @@ export interface RecipeCreateDTO {
     categoryId: number;
     foodTypeId: number;
     uuid: string;
-    title_name: string;
+    titleName: string;
     imageUrl?: string | null;
     videoUrl?: string | null;
 }
+

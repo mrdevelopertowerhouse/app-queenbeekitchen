@@ -13,3 +13,6 @@ export async function POST(req: NextRequest) {
     return await RecipeController.createRecipe(req);
 }
 
+export async function GET() {
+    return await RecipeController.getAllRecipes();
+}

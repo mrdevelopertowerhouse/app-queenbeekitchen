@@ -4,9 +4,13 @@ import { m_recipe, Prisma } from "@prisma/client";
 import { NextRequest } from "next/server";
 import { AppPrismaError } from "../errors/AppPrismaError";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/binary";
-import { CuisineUniqueConstraints, RecipeUniqueConstraints } from "../prisma/UniqueConstraints";
+import { RecipeUniqueConstraints } from "../prisma/UniqueConstraints";
 
-
+enum ErrorCode {
+    CUISINE_NOT_FOUND = "CUISINE_NOT_FOUND",
+    CATEGORY_NOT_FOUND = "CATEGORY_NOT_FOUIND",
+    FOODTYPE_NOT_FOUND = "FOODTYPE_NOT_FOUND"
+}
 export class RecipeService {
 
     static async createRecipe(data: RecipeCreateDTO, creatorId: number): Promise<Partial<m_recipe>> {
@@ -17,7 +21,7 @@ export class RecipeService {
                     cuisineId: data.cuisineId,
                     categoryId: data.categoryId,
                     foodTypeId: data.foodTypeId,
-                    regionalName: data.title_name,  // mapping happens here
+                    titleName: data.titleName,  // mapping happens here
                     imageUrl: data.imageUrl ?? null,
                     videoUrl: data.videoUrl ?? null,
                     createdBy: creatorId,
@@ -25,7 +29,7 @@ export class RecipeService {
                 },
                 select: {
                     id: true,
-                    regionalName: true
+                    titleName: true
                 }
             });
 
@@ -35,21 +39,45 @@ export class RecipeService {
 
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
                 AppPrismaError.handle<m_recipe, RecipeUniqueConstraints>(error, {
-                    fk: ['createdBy', 'updatedBy'],
+                    fk: ["cuisineId", "categoryId", "foodTypeId", 'createdBy', 'updatedBy'],
                     unique: [
                         {
                             field: 'uuid',
                             message: `Recipe with recipeid'${data.uuid}' already exists.`
                         },
                         {
-                            field: 'regionalName',
-                            message: `Recipe with regional name'${data.title_name} already exists`
+                            field: 'titleName',
+                            message: `Recipe with regional name'${data.titleName} already exists`
                         }
                     ],
+                    notFound: { errorCode: ErrorCode.CATEGORY_NOT_FOUND }
                 });
             }
             throw error; // Re-throw to handle in controller
-
         }
     }
+
+    /**
+     * 
+     * Get all recipes that are not soft-deleted
+     * 
+     * @returns Promise<Partial<m_recipe>[]> - array of recipe objects with only selected fields
+     */
+    static async getAllRecipes(): Promise<Partial<m_recipe>[]> {
+        const recipes = await prisma.m_recipe.findMany({
+            where: {
+                delFlag: false,
+            },
+            select: {
+                id: true,
+                titleName: true
+            },
+            orderBy: {
+                id: "asc",
+            },
+        });
+
+        return recipes;
+    }
+
 }

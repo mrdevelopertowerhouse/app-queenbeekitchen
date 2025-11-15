@@ -17,5 +17,5 @@ export interface LanguageUniqueConstraints {
 
 export interface RecipeUniqueConstraints {
     uuid: string;
-    regionalName: string;
+    titleName: string;
 }

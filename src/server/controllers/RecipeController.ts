@@ -24,8 +24,7 @@ export class RecipeController {
                 cuisineId: recipe.cuisineId,
                 categoryId: recipe.categoryId,
                 foodTypeId: recipe.foodTypeId,
-                regionalName: recipe.regionalName,
-
+                titleName: recipe.titleName,
             };
 
             return NextResponse.json(
@@ -51,15 +50,33 @@ export class RecipeController {
                 }),
                 { status: 500 }
             );
+        }
+    }
 
-            //     return NextResponse.json(Controller.errorResponse(      
+    static async getAllRecipes() {
+        try {
 
-            //         {
-            //             error:error,
-            //             message: "Failed to create cuisine",
-            //         },
-            //         { status: 500 }
-            //    );
+            const recipes = await RecipeService.getAllRecipes();
+
+            return NextResponse.json(
+                Controller.jsonResponse({
+                    statusCode: recipes && recipes.length > 0 ? 1 : 0,
+                    message: recipes && recipes.length > 0 ? "Recipes fetched successfully" : "No recipes found",
+                    data: recipes,
+                }), { status: 500 }
+            );
+
+        } catch (error) {
+
+            if (error instanceof HttpError) {
+                return NextResponse.json(error.toJson(), { status: error.status });
+            }
+
+            return NextResponse.json(Controller.errorResponse({
+                error: error,
+                message: "Recipes not fecthed"
+            }), { status: 500 })
+
         }
     }
 }
