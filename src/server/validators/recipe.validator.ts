@@ -1,4 +1,4 @@
-import { RecipeCreateDTO } from "@/shared/dto/recipe.dto";
+import { RecipeCreateDTO, RecipeUpdateDTO } from "@/shared/dto/recipe.dto";
 import Joi from "joi";
 
 export class RecipeRequestValidator {
@@ -28,7 +28,23 @@ export class RecipeRequestValidator {
                 .min(1)
                 .required()
         });
+    }
 
 
+    public static updateRecipe(data: RecipeUpdateDTO): void {
+        const recipeSchema = Joi.object({
+            cuisineId: Joi.number().integer().min(1).optional(),
+            categoryId: Joi.number().integer().min(1).optional(),
+            foodTypeId: Joi.number().integer().min(1).optional(),
+
+            titleName: Joi.string().max(191).optional(),
+
+            imageUrl: Joi.string().uri().allow(null).optional(),
+            videoUrl: Joi.string().uri().allow(null).optional()
+        })
+            .min(1) // At least one field must be provided
+            .messages({
+                "object.min": "At least one field must be updated."
+            });
     }
 }

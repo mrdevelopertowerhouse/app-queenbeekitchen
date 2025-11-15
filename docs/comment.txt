@@ -7,7 +7,7 @@ model User {
   createdAt DateTime @default(now())
 }
  
-run command in teriminal the table is store in the database
+run the below command in terminal the table is store in the database
     
     npx prisma db push
 

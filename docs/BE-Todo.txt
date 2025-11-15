@@ -609,7 +609,7 @@ Project Requirement: 05-11-2025
 
                 5. recipe_uuid (Varchar(191), Unique, Not Null)
 
-                6. title_name (Varchar(191))
+                6. titleName (Varchar(191))
 
                 7. imageUrl (Varchar(191), Optional)
 

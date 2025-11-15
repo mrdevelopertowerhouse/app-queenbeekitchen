@@ -83,7 +83,7 @@ export class CuisineController {
             return NextResponse.json(Controller.errorResponse({
                 error: error,
                 message: "Failed to fetch cuisines",
-            })), { status: 500 };
+            }), { status: 500 });
         }
     }
 
